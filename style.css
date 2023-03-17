@@ -10,8 +10,9 @@
   --main-bg-color: #f6f1f1;
   --green: #4e6c50;
 
-  --light-blue: #19a7ce;
   --highlight-blue: #146c94;
+  --hovered-blue: rgb(51, 118, 149);
+  --active-blue: #286988;
   --red: #cd104d;
   --FF: "Roboto", sans-serif;
   --white: #fbfafa;
@@ -78,15 +79,15 @@ button {
   font-family: var(--FF);
   font-size: 2.1rem;
   text-transform: uppercase;
+  transition: all 0.1s;
 }
 
 .input-btn:link,
 .input-btn:hover {
-  background-color: #2c7698;
-  transition: all 0.15s;
+  background-color: var(--hovered-blue);
 }
 .input-btn:active {
-  background-color: #286d8d;
+  background-color: var(--active-blue);
 }
 /* .list-container {
   display: flex;
@@ -111,35 +112,32 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 }
 .plan-checkbox {
   margin-right: 1rem;
   width: 1.8rem;
   height: 1.8rem;
 }
-.plan-checkbox:checked {
-  accent-color: var(--highlight-blue);
-}
-.checked .plan-display::before {
+
+.checked.plan-display::before {
   content: " ";
   position: absolute;
   border-top: 1px solid var(--grey);
   top: 50%;
-  left: 0;
-  width: 90%;
+  left: 7.5%;
+  width: 60%;
 }
 .plan-display {
   font-size: 1.8rem;
   color: var(--Fcolor);
   flex-grow: 1;
-  position: relative;
 }
 .form-edit {
   flex-grow: 1;
 }
 .plan-edit {
-  width: 50%;
-  margin-right: 10%;
+  margin-right: 23%;
   height: 100%;
   font-size: 1.8rem;
   color: var(--Fcolor);
@@ -164,7 +162,7 @@ button {
   border-radius: 4px;
 }
 .edit-btn {
-  color: var(--green);
+  color: var(--highlight-blue);
   font-size: 1.8rem;
   background-color: var(--white);
   border-radius: 4px;
@@ -175,8 +173,12 @@ input[disabled],
   opacity: 0.4;
   pointer-events: none;
 }
+
 .checked {
-  opacity: 0.4;
+  opacity: 0.6;
+}
+.plan-checkbox:checked {
+  accent-color: var(--highlight-blue);
 }
 .hide {
   display: none;
@@ -190,6 +192,13 @@ input[disabled],
   padding: 0.4rem 0.8rem;
   border-radius: 4px;
   margin-right: 1rem;
+  transition: all 0.1s;
+}
+.save-btn:hover {
+  background-color: var(--hovered-blue);
+}
+.save-btn:active {
+  background-color: var(--active-blue);
 }
 .cancel-btn {
   font-size: 1.2rem;
@@ -199,4 +208,11 @@ input[disabled],
   text-transform: uppercase;
   border-radius: 4px;
   padding: 0.4rem 0.8rem;
+  transition: all 0.1s;
+}
+.cancel-btn:hover {
+  background-color: #f9f6f6;
+}
+.cancel-btn:active {
+  background-color: #f2f1f1;
 }
