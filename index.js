@@ -22,26 +22,6 @@ try {
 }
 render(savedPlans);
 
-function handleCheck(event) {
-  console.log("handleCheck called");
-  console.log("handleCheck 1");
-  const listItem = event.target.parentNode;
-  const itemId = event.target.id;
-  const isChecked = event.target.checked;
-  const itemIndex = findIndexById(itemId);
-  savedPlans[itemIndex].checked = isChecked;
-  if (isChecked) {
-    listItem.classList.add("checked");
-  } else {
-    listItem.classList.remove("checked");
-  }
-
-  if (itemIndex === -1) {
-    throw new Error(`Item with id ${itemId} not found in savedPlans`);
-  }
-  setLocalStorage(savedPlans);
-  console.log("handleCheck 2");
-}
 function disableButtons() {
   const buttonContainers = document.querySelectorAll(".btn-container");
   const checkboxes = document.querySelectorAll(".plan-checkbox");
@@ -103,76 +83,119 @@ function unbindSaveEvents(listItem) {
   editForm.removeEventListener("submit", handleSave);
   cancelBtn.removeEventListener("click", handleCancel);
 }
-function createListItem(id, value, checked) {
+function createLiElement(id) {
   const listItem = document.createElement("li");
   listItem.id = id;
   listItem.classList.add("plan");
-  if (checked) {
-    listItem.classList.add("checked");
-  }
-
+  return listItem;
+}
+function createCheckBox(id, checked, className, textContent) {
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
-  checkbox.className = "plan-checkbox";
-  checkbox.id = listItem.id;
+  checkbox.className = className;
+  checkbox.id = id;
   checkbox.checked = checked ? true : false;
 
   const checkboxLabel = document.createElement("label");
-  checkboxLabel.id = listItem.id;
-  checkboxLabel.textContent = "Mark as completed";
+  checkboxLabel.id = id;
+  checkboxLabel.textContent = textContent;
   checkbox.addEventListener("click", handleCheck);
 
+  return { checkbox, checkboxLabel };
+}
+function createPlanContentDiv(value, className, checked) {
   const planContainer = document.createElement("div");
-  planContainer.className = "plan-display";
+  planContainer.className = className;
   planContainer.textContent = value;
+  if (checked) {
+    planContainer.classList.add("checked");
+  }
+  return planContainer;
+}
+function createBtn(className, innerHTML, ariaLabel) {
+  const btn = document.createElement("button");
+  btn.className = className;
+  btn.innerHTML = innerHTML;
+  btn.ariaLabel = ariaLabel;
 
+  return btn;
+}
+function createBtnContainer(classList) {
   const buttonContainer = document.createElement("div");
-  buttonContainer.classList = "btn-container";
+  buttonContainer.classList = classList;
 
+  const editButton = createBtn(
+    "edit-btn",
+    `<i class="fa-solid fa-pen-to-square"></i>`,
+    "Edit Plan"
+  );
+
+  const deleteButton = createBtn(
+    "delete-btn",
+    `<i class="fa-solid fa-trash"></i>`,
+    "Delete Plan"
+  );
+  buttonContainer.appendChild(editButton);
+  buttonContainer.appendChild(deleteButton);
+
+  return buttonContainer;
+}
+function createEditForm(className, editLabeltext, id) {
   const editForm = document.createElement("form");
-  editForm.className = "form-edit";
+  editForm.className = className.editForm;
   editForm.classList.add("hide");
 
   const editInput = document.createElement("input");
-  editInput.className = "plan-edit";
-  editInput.id = listItem.id;
+  editInput.className = className.editInput;
+  editInput.id = id;
   const editInputLabel = document.createElement("label");
-  editInputLabel.htmlFor = editInput.id;
-  editInputLabel.textContent = "Edit Plan";
-  const editButton = document.createElement("button");
-  editButton.className = "edit-btn";
-  editButton.innerHTML = `<i class="fa-solid fa-pen-to-square"></i>`;
-  editButton.ariaLabel = "Edit Plan";
+  editInputLabel.htmlFor = id;
+  editInputLabel.textContent = editLabeltext;
 
-  const deleteButton = document.createElement("button");
-  deleteButton.className = "delete-btn";
-  deleteButton.innerHTML = `<i class="fa-solid fa-trash"></i>`;
-  deleteButton.ariaLabel = "Delete Plan";
-
-  const saveButton = document.createElement("button");
-  saveButton.className = "save-btn";
-  saveButton.textContent = "save";
+  const saveButton = createBtn("save-btn", "save", "Save Changes");
   saveButton.type = "submit";
-  saveButton.ariaLabel = "Save Changes";
 
-  const cancelButton = document.createElement("button");
+  const cancelButton = createBtn("cancel-btn", "cancel", "Discard Changes");
   cancelButton.type = "button";
-  cancelButton.ariaLabel = "Discard Changes";
-  cancelButton.className = "cancel-btn";
-  cancelButton.textContent = "cancel";
-
-  listItem.appendChild(checkboxLabel);
-  listItem.appendChild(checkbox);
-
-  listItem.appendChild(planContainer);
-
-  buttonContainer.appendChild(editButton);
-  buttonContainer.appendChild(deleteButton);
 
   editForm.appendChild(editInputLabel);
   editForm.appendChild(editInput);
   editForm.appendChild(saveButton);
   editForm.appendChild(cancelButton);
+
+  return editForm;
+}
+function createListItem(id, value, checked) {
+  const listItem = createLiElement(id);
+
+  const checkboxWithLabel = createCheckBox(
+    id,
+    checked,
+    "plan-checkbox",
+    "Mark as completed"
+  );
+
+  const checkboxEl = checkboxWithLabel.checkbox;
+  const checkboxLabel = checkboxWithLabel.checkboxLabel;
+
+  const planContainer = createPlanContentDiv(value, "plan-display", checked);
+
+  const buttonContainer = createBtnContainer("btn-container");
+
+  // const editForm=createEditForm()
+
+  const editFormClassNames = {
+    editForm: "form-edit",
+    editInput: "plan-edit",
+  };
+  const editLabeltext = "Edit Plan";
+
+  const editForm = createEditForm(editFormClassNames, editLabeltext, id);
+
+  listItem.appendChild(checkboxLabel);
+  listItem.appendChild(checkboxEl);
+
+  listItem.appendChild(planContainer);
 
   listItem.appendChild(buttonContainer);
   listItem.appendChild(editForm);
@@ -263,10 +286,26 @@ function showSaveElements(listItem, currentValue) {
   disableButtons();
   return listItem;
 }
+function handleCheck(event) {
+  const listItem = event.target.parentNode;
+  const planContent = listItem.querySelector(".plan-display");
+  const itemId = event.target.id;
+  const isChecked = event.target.checked;
+  const itemIndex = findIndexById(itemId);
+  savedPlans[itemIndex].checked = isChecked;
+  if (isChecked) {
+    planContent.classList.add("checked");
+  } else {
+    planContent.classList.remove("checked");
+  }
+
+  if (itemIndex === -1) {
+    throw new Error(`Item with id ${itemId} not found in savedPlans`);
+  }
+  setLocalStorage(savedPlans);
+}
 function handleSave(event) {
   event.preventDefault();
-  console.log("handleSave called");
-  console.log("handleSave1");
   event.stopPropagation();
   const editForm = event.target;
   let listItem = event.target.parentNode;
@@ -296,22 +335,15 @@ function handleSave(event) {
     // listItem.id = editedPlan.id;
     listItem = showEditElements(listItem, editedPlan.value);
   }
-  console.log("handleSave2");
 }
 function handleDelete(event) {
-  console.log("handleDelete called because");
-  console.log(event.target);
-  console.log("handleDelete 1");
   const item = event.target.closest(".plan");
   const itemId = item.id;
   savedPlans = savedPlans.filter((item) => item.id !== itemId);
   setLocalStorage(savedPlans);
   render(savedPlans);
-  console.log("handleDelete 2");
 }
 function handleCancel(event) {
-  console.log("handleCancel called");
-  console.log("handleCancel 1");
   let listItem = event.target.closest(".plan");
   const currentValue = listItem.querySelector(".plan-display").textContent;
 
@@ -320,11 +352,8 @@ function handleCancel(event) {
   listItem = hideSaveElements(listItem);
 
   listItem = showEditElements(listItem, currentValue);
-  console.log("handleCancel 2");
 }
 function handleEdit(event) {
-  console.log("handleEdit called");
-  console.log("handleEdit 1");
   let listItem = event.target.closest(".plan");
 
   const itemId = listItem.id;
@@ -334,7 +363,6 @@ function handleEdit(event) {
   listItem = showSaveElements(listItem, currentValue);
 
   listItem.id = itemId;
-  console.log("handleEdit 2");
 }
 
 function render(planArr) {
