@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Detail TODO List</title>
+  </head>
+  <body>
+    <section id="container">
+      <h1 class="title">TODO LIST</h1>
+      <div class="input-container">
+        <input type="text" class="todo-input" onkeyup="submitToDo(event)"/>
+      </div>
+      <div class="filter-container">
+        <select id="todo-filter">
+          <option value="all">전체</option>
+          <option value="todo">할일</option>
+          <option value="done">완료</option>
+        </select>
+      </div>
+      <div class="list-container">
+        <ul id="todo-list" class="todo-list"></ul>
+      </div>
+    </section>
+  </body>
+  <script>
+
+    
+    const onClickFilter = (event) =>{
+
+      const filterValue = event.target.value;
+
+      const listItems = document.querySelectorAll(".todo-list li");
+
+      listItems.forEach((item)=>{
+
+        const checkbox = item.querySelector(".checkbox");
+        const isChecked = checkbox.checked;
+
+
+        switch(filterValue){
+
+          case "all":
+            item.removeAttribute("hidden");
+            break;
+          case "todo":
+            isChecked? item.setAttribute("hidden","true") : item.removeAttribute("hidden"); 
+            break;
+          case "done":
+          isChecked? item.removeAttribute("hidden") : item.setAttribute("hidden", "true");
+            break;
+
+          default:
+          item.removeAttribute("hidden");
+            
+
+        }
+      })
+     
+      
+
+
+      
+      
+
+    }
+    document.querySelector("#todo-filter").addEventListener("change", onClickFilter);
+
+    const submitToDo = (event) =>{
+        event.preventDefault();
+        if (event.keyCode == 13){
+
+            const userInput = document.querySelector(".todo-input");
+
+            const newToDo = document.createElement("li");
+            createContentsInsideElement(newToDo,userInput.value);
+
+            const currentToDos = document.querySelector(".todo-list");
+            currentToDos.appendChild(newToDo);
+
+           
+            userInput.value =  "";
+            
+        }
+    }
+
+    const createContentsInsideElement = (newToDo,userInput)=>{
+          
+        const toDoCheckbox = document.createElement("input");
+        toDoCheckbox.type = "checkbox";
+        toDoCheckbox.className = "checkbox";
+        toDoCheckbox.addEventListener("click", toggleCheck);
+      
+
+        const toDoContent = document.createTextNode(userInput);
+        const editButton = document.createElement("button");
+        editButton.innerHTML = "Edit";
+        editButton.className = "edit";
+        editButton.addEventListener("click", revealEditForm);
+
+        const editForm = document.createElement("input");
+        editForm.type= "text";
+        editForm.value = userInput;
+        editForm.setAttribute("hidden", true)
+
+
+        const saveButton = document.createElement("button");
+        saveButton.innerHTML = "Save";
+        saveButton.setAttribute("hidden", true);
+        saveButton.addEventListener("click",saveEditedContent);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.innerHTML="X";
+        deleteButton.addEventListener("click", handleDelete);
+
+        newToDo.appendChild(toDoCheckbox);
+        newToDo.appendChild(toDoContent);
+        newToDo.appendChild(editButton);
+        newToDo.appendChild(deleteButton);
+
+        newToDo.appendChild(editForm);
+        newToDo.appendChild(saveButton);
+
+
+
+
+    }
+
+    const toggleCheck = (event)=>{
+
+        if (event.target.getAttribute("checked")){
+            event.target.removeAttribute("checked");
+        }else{
+            event.target.setAttribute("checked", true);
+        }
+    }
+
+    const revealEditForm = (event)=>{
+
+        const selectedItem = event.target.parentElement;
+
+        selectedItem.removeChild(selectedItem.childNodes[1]);
+
+        const buttonsToHide = selectedItem.childNodes;
+        buttonsToHide.forEach(element => {
+          toggleHidden(element);
+
+        selectedItem.querySelector("input[type='text']").focus();
+      
+
+    })
+  }
+    const saveEditedContent = (event)=>{
+      
+      const elementToSave = event.target.parentNode;
+
+      const contentText = document.createTextNode(elementToSave.querySelector("input[type='text']").value);
+
+      const butttons = elementToSave.childNodes;
+
+      butttons.forEach(element =>{
+        toggleHidden(element);
+      })
+
+      elementToSave.insertBefore(contentText, elementToSave.querySelector(".edit"));
+     
+    }
+
+    const toggleHidden=(element)=>{
+
+      if(element.getAttribute("hidden") !== null){
+        element.removeAttribute("hidden");
+      }else{
+        element.setAttribute("hidden", true);
+      }
+    }
+
+    const handleDelete = (event) =>{
+      
+      const listItem = event.target.parentNode;
+      listItem.remove();
+ 
+    }
+  </script>
+</html>
